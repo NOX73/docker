@@ -78,6 +78,7 @@ type Image struct {
 // GET "/images/{name:.*}/json"
 type ImageInspect struct {
 	Id              string
+	Tags            []string
 	Parent          string
 	Comment         string
 	Created         time.Time

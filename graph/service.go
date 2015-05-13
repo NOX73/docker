@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/utils"
 )
 
 func (s *TagStore) LookupRaw(name string) ([]byte, error) {
@@ -29,8 +30,22 @@ func (s *TagStore) Lookup(name string) (*types.ImageInspect, error) {
 		return nil, fmt.Errorf("No such image: %s", name)
 	}
 
+	var tags = make([]string, 0)
+
+	s.Lock()
+	for repoName, repository := range s.Repositories {
+		for ref, id := range repository {
+			if id == image.ID {
+				imgRef := utils.ImageReference(repoName, ref)
+				tags = append(tags, imgRef)
+			}
+		}
+	}
+	s.Unlock()
+
 	imageInspect := &types.ImageInspect{
 		Id:              image.ID,
+		Tags:            tags,
 		Parent:          image.Parent,
 		Comment:         image.Comment,
 		Created:         image.Created,
